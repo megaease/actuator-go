@@ -12,7 +12,7 @@ func main() {
 	actuator := actuator.NewActuator()
 
 	// Register indicators
-	actuator.RegisterHealthIndicator("memory", &healthindicator.MemoryHealthIndicator{})
+	actuator.RegisterHealthIndicator("self-example", &healthindicator.SelfHealthIndicator{})
 
 	// Create HTTP server
 	http.HandleFunc("/actuator/health", actuator.HealthHandler())
