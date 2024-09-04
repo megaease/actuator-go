@@ -9,13 +9,19 @@ import (
 )
 
 func main() {
-	actuator := actuator.NewActuator()
+	actuatorExample := actuator.NewActuator()
 
 	// Register indicators
-	actuator.RegisterHealthIndicator("self-example", &healthindicator.SelfHealthIndicator{})
+	actuatorExample.RegisterHealthIndicator("self-example", &healthindicator.SelfHealthIndicator{})
+
+	actuatorExample.RegisterDynamicHealthIndicator(func() map[string]actuator.HealthIndicator {
+		return map[string]actuator.HealthIndicator{
+			"dynamic-indicator-1": &healthindicator.SelfHealthIndicator{},
+		}
+	})
 
 	// Create HTTP server
-	http.HandleFunc("/actuator/health", actuator.HealthHandler())
+	http.HandleFunc("/actuator/health", actuatorExample.HealthHandler())
 
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

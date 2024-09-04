@@ -11,7 +11,8 @@ import (
 
 // Actuator manages the health indicators.
 type Actuator struct {
-	indicators map[string]HealthIndicator
+	indicators              map[string]HealthIndicator
+	dynamicIndicatorsGetter func() map[string]HealthIndicator
 }
 
 // NewActuator creates a new Actuator.
@@ -24,6 +25,11 @@ func NewActuator() *Actuator {
 // RegisterHealthIndicator registers a new health indicator.
 func (a *Actuator) RegisterHealthIndicator(name string, indicator HealthIndicator) {
 	a.indicators[name] = indicator
+}
+
+// RegisterDynamicHealthIndicator registers a function to dynamically get health indicators.
+func (a *Actuator) RegisterDynamicHealthIndicator(dynamicFunc func() map[string]HealthIndicator) {
+	a.dynamicIndicatorsGetter = dynamicFunc
 }
 
 // Health checks the health of all registered indicators with an optional `withDetails` flag.
@@ -39,6 +45,17 @@ func (a *Actuator) Health(withDetails bool) Health {
 
 		if componentHealth.Status == "DOWN" {
 			health.Status = "DOWN"
+		}
+	}
+
+	if a.dynamicIndicatorsGetter != nil {
+		for name, indicator := range a.dynamicIndicatorsGetter() {
+			componentHealth := indicator.Health(withDetails)
+			health.Components[name] = componentHealth
+
+			if componentHealth.Status == "DOWN" {
+				health.Status = "DOWN"
+			}
 		}
 	}
 
