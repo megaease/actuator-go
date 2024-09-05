@@ -89,6 +89,12 @@ func (a *Actuator) HealthHandler() http.HandlerFunc {
 			return
 		}
 
+		if health.Status == "DOWN" {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+
 		w.Write(healthBytes)
 	}
 }
@@ -107,7 +113,10 @@ func (a *Actuator) HealthEchoHandler() echo.HandlerFunc {
 			return c.String(http.StatusInternalServerError, fmt.Sprintf("failed to marshal health status: %v", err))
 		}
 
-		// Return the health status as a plain string
+		if health.Status == "DOWN" {
+			return c.String(http.StatusServiceUnavailable, string(healthBytes))
+		}
+
 		return c.String(http.StatusOK, string(healthBytes))
 	}
 }
