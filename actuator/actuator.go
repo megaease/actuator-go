@@ -63,8 +63,14 @@ func (a *Actuator) Health(withDetails bool) Health {
 }
 
 func checkDetailsParam(params url.Values) bool {
-	value, exists := params["details"]
-	return exists && (value[0] == "" || value[0] == "true")
+	// Check for both "detail" and "details"
+	for _, key := range []string{"detail", "details"} {
+		value, exists := params[key]
+		if exists && (value[0] == "" || value[0] == "true") {
+			return true
+		}
+	}
+	return false
 }
 
 // HealthHandler returns an HTTP handler for health checks.
